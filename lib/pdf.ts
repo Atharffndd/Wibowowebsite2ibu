@@ -32,11 +32,23 @@ export async function elementToPdf(el: HTMLElement, fileName: string): Promise<F
     );
     if (document.fonts?.ready) await document.fonts.ready;
 
-    const rootTop = clone.getBoundingClientRect().top;
+    const root = clone.getBoundingClientRect();
+    const rootTop = root.top;
     const rel = (n: Element) => {
       const r = n.getBoundingClientRect();
       return { top: r.top - rootTop, bottom: r.bottom - rootTop };
     };
+
+    // Gambar (cap + paraf) tidak ikut dirender html-to-image: Safari iPad sering gagal menggambar <img>
+    // di dalam SVG sehingga cap hilang. Gambar disembunyikan lalu digambar langsung ke kanvas.
+    const imgs = await Promise.all(
+      Array.from(clone.querySelectorAll("img")).map(async (img) => {
+        const r = img.getBoundingClientRect();
+        const box = { x: r.left - root.left, y: r.top - rootTop, w: r.width, h: r.height };
+        img.style.visibility = "hidden";
+        return { box, el: await loadImage(img.currentSrc || img.src) };
+      }),
+    );
     const totalH = clone.scrollHeight;
 
     // Titik potong yang aman: awal setiap baris barang & blok yang tidak boleh terbelah
@@ -53,6 +65,15 @@ export async function elementToPdf(el: HTMLElement, fileName: string): Promise<F
     const headH = head ? head.bottom - head.top : 0;
 
     const canvas = await toCanvas(clone, { pixelRatio: SCALE, backgroundColor: "#ffffff", cacheBust: true });
+    const cctx = canvas.getContext("2d")!;
+    for (const { box, el } of imgs) {
+      if (!el || !el.naturalWidth || !box.w || !box.h) continue;
+      // object-contain: pas di dalam kotak, di tengah
+      const k = Math.min(box.w / el.naturalWidth, box.h / el.naturalHeight);
+      const w = el.naturalWidth * k;
+      const h = el.naturalHeight * k;
+      cctx.drawImage(el, (box.x + (box.w - w) / 2) * SCALE, (box.y + (box.h - h) / 2) * SCALE, w * SCALE, h * SCALE);
+    }
 
     const pxPerMm = contentWidthPx / (A4_W - 2 * MARGIN);
     const pageH = (A4_H - 2 * MARGIN) * pxPerMm;
@@ -95,6 +116,22 @@ export async function elementToPdf(el: HTMLElement, fileName: string): Promise<F
   } finally {
     holder.remove();
   }
+}
+
+function loadImage(src: string): Promise<HTMLImageElement | null> {
+  return new Promise((res) => {
+    if (!src) return res(null);
+    const im = new Image();
+    im.crossOrigin = "anonymous";
+    im.onload = async () => {
+      try {
+        await im.decode();
+      } catch {}
+      res(im);
+    };
+    im.onerror = () => res(null);
+    im.src = src;
+  });
 }
 
 export function downloadFile(file: File) {
