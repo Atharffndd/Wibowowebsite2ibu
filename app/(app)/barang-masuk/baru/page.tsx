@@ -7,6 +7,7 @@ import { loadProducts, loadStockAll, loadSuppliers, type StockAll } from "@/lib/
 import { num, rp, today } from "@/lib/format";
 import type { LineItem, Product, Purchase, Supplier } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
+import { MobileSaveBar } from "@/components/MobileSaveBar";
 import { ItemsEditor, addBack, itemsPayload, itemsSubtotal, newKey } from "@/components/ItemsEditor";
 import { Button, Card, ErrorBox, Field, Input, Loading, NumInput, PageHeader, Select, Textarea } from "@/components/ui";
 
@@ -238,6 +239,7 @@ function PurchaseForm() {
           </Card>
         </div>
       </div>
+      <MobileSaveBar total={total} label={"Simpan"} busy={busy} onSave={save} error={error} />
     </>
   );
 }

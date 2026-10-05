@@ -142,94 +142,90 @@ export function ItemsEditor({
     <div className="space-y-3">
       <ProductSearch products={products} onPick={add} />
       {items.length > 0 && (
-        <div className="overflow-x-auto -mx-4 md:mx-0">
-          <table className="w-full text-sm data-table">
-            <thead>
-              <tr>
-                <th className="w-8">#</th>
-                <th>Nama barang</th>
-                <th className="w-36">Gudang</th>
-                <th className="w-28 text-right">Jumlah</th>
-                <th className="w-28">Satuan</th>
-                <th className="w-36 text-right">{priceLabel}</th>
-                <th className="w-36 text-right">Subtotal</th>
-                <th className="w-10" />
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((it, i) => {
-                const p = byId[it.product_id];
-                const units = p?.product_units?.length ? p.product_units : [{ unit: it.unit, factor: it.factor }];
-                const st = stockAll?.[it.product_id] ?? {};
-                const avail = st[it.warehouse_id] ?? 0;
-                const need = needBy[`${it.product_id}|${it.warehouse_id}`] ?? 0;
-                const short = checkStock && stockAll !== undefined && need > avail;
-                return (
-                  <tr key={it.key}>
-                    <td className="text-muted">{i + 1}</td>
-                    <td>
-                      <input
-                        value={it.name}
-                        onChange={(e) => update(it.key, { name: e.target.value })}
-                        className="w-full min-w-40 bg-transparent border-b border-transparent focus:border-brand focus:outline-none"
-                      />
-                      <div className="text-xs text-muted flex flex-wrap gap-x-3">
-                        {stockAll !== undefined && (
-                          <span>
-                            stok:{" "}
-                            {warehouses.map((w, j) => (
-                              <span key={w.id} className={cx(w.id === it.warehouse_id && "font-semibold text-ink", w.id === it.warehouse_id && short && "text-amber-600")}>
-                                {j > 0 && " · "}
-                                {w.code} {fq(st[w.id] ?? 0)}
-                              </span>
-                            ))}{" "}
-                            {p?.base_unit}
-                          </span>
-                        )}
-                        {short && <span className="text-amber-600 font-medium">stok {whCode(it.warehouse_id)} kurang {fq(need - avail)} — tetap bisa disimpan (stok jadi minus)</span>}
-                        {it.factor !== 1 && (
-                          <span>
-                            = {fq(it.qty * it.factor)} {p?.base_unit}
-                          </span>
-                        )}
-                        {hint?.(it)}
-                      </div>
-                    </td>
-                    <td>
-                      <Select value={it.warehouse_id} onChange={(e) => update(it.key, { warehouse_id: e.target.value })} className={cx("py-1.5", short && "border-amber-400")}>
-                        {warehouses.map((w) => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
-                          </option>
-                        ))}
-                      </Select>
-                    </td>
-                    <td>
-                      <NumInput value={it.qty} onChange={(n) => update(it.key, { qty: n })} className="py-1.5" />
-                    </td>
-                    <td>
-                      <Select value={it.unit} onChange={(e) => changeUnit(it, e.target.value)} className="py-1.5">
-                        {units.map((u) => (
-                          <option key={u.unit} value={u.unit}>
-                            {u.unit}
-                          </option>
-                        ))}
-                      </Select>
-                    </td>
-                    <td>
-                      <NumInput value={it.price} onChange={(n) => update(it.key, { price: n })} className="py-1.5" />
-                    </td>
-                    <td className="num font-medium">{num(it.qty * it.price)}</td>
-                    <td>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => setItems((its) => its.filter((x) => x.key !== it.key))} aria-label="Hapus">
-                        ✕
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="space-y-2">
+          {items.map((it, i) => {
+            const p = byId[it.product_id];
+            const units = p?.product_units?.length ? p.product_units : [{ unit: it.unit, factor: it.factor }];
+            const st = stockAll?.[it.product_id] ?? {};
+            const avail = st[it.warehouse_id] ?? 0;
+            const need = needBy[`${it.product_id}|${it.warehouse_id}`] ?? 0;
+            const short = checkStock && stockAll !== undefined && need > avail;
+            return (
+              <div key={it.key} className={cx("rounded-lg border bg-white p-3", short ? "border-amber-300" : "border-line")}>
+                {/* Baris 1: nomor, nama barang, info stok, hapus */}
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 w-6 shrink-0 text-sm text-muted tabular-nums">{i + 1}.</span>
+                  <div className="min-w-0 flex-1">
+                    <input
+                      value={it.name}
+                      onChange={(e) => update(it.key, { name: e.target.value })}
+                      aria-label="Nama barang"
+                      className="w-full bg-transparent text-sm font-medium border-b border-transparent focus:border-brand focus:outline-none"
+                    />
+                    <div className="text-xs text-muted flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                      {stockAll !== undefined && (
+                        <span>
+                          stok:{" "}
+                          {warehouses.map((w, j) => (
+                            <span key={w.id} className={cx(w.id === it.warehouse_id && "font-semibold text-ink", w.id === it.warehouse_id && short && "text-amber-600")}>
+                              {j > 0 && " · "}
+                              {w.code} {fq(st[w.id] ?? 0)}
+                            </span>
+                          ))}{" "}
+                          {p?.base_unit}
+                        </span>
+                      )}
+                      {short && <span className="text-amber-600 font-medium">stok {whCode(it.warehouse_id)} kurang {fq(need - avail)} — tetap bisa disimpan (stok jadi minus)</span>}
+                      {it.factor !== 1 && (
+                        <span>
+                          = {fq(it.qty * it.factor)} {p?.base_unit}
+                        </span>
+                      )}
+                      {hint?.(it)}
+                    </div>
+                  </div>
+                  <Button type="button" variant="ghost" size="sm" className="shrink-0 text-red-600" onClick={() => setItems((its) => its.filter((x) => x.key !== it.key))} aria-label="Hapus barang">
+                    ✕
+                  </Button>
+                </div>
+                {/* Baris 2: isian — 2 kolom di layar sempit, 5 kolom di layar lebar */}
+                <div className="mt-2 grid grid-cols-2 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_minmax(0,1.2fr)] gap-2 sm:pl-8">
+                  <label className="block">
+                    <span className="block text-[11px] font-medium text-muted mb-0.5">Gudang</span>
+                    <Select value={it.warehouse_id} onChange={(e) => update(it.key, { warehouse_id: e.target.value })} className={cx("py-1.5", short && "border-amber-400")}>
+                      {warehouses.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.code}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                  <label className="block">
+                    <span className="block text-[11px] font-medium text-muted mb-0.5">Jumlah</span>
+                    <NumInput value={it.qty} onChange={(n) => update(it.key, { qty: n })} className="py-1.5" />
+                  </label>
+                  <label className="block">
+                    <span className="block text-[11px] font-medium text-muted mb-0.5">Satuan</span>
+                    <Select value={it.unit} onChange={(e) => changeUnit(it, e.target.value)} className="py-1.5">
+                      {units.map((u) => (
+                        <option key={u.unit} value={u.unit}>
+                          {u.unit}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                  <label className="block">
+                    <span className="block text-[11px] font-medium text-muted mb-0.5">{priceLabel}</span>
+                    <NumInput value={it.price} onChange={(n) => update(it.key, { price: n })} className="py-1.5" />
+                  </label>
+                  <div className="col-span-2 sm:col-span-1 flex sm:block items-center justify-between rounded-lg bg-slate-50 px-3 py-1.5 sm:bg-transparent sm:p-0">
+                    <span className="block text-[11px] font-medium text-muted sm:mb-0.5">Subtotal</span>
+                    <span className="block text-right font-semibold tabular-nums sm:py-2">{num(it.qty * it.price)}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
       {items.length === 0 && <div className="text-sm text-muted text-center py-6 border border-dashed border-line rounded-lg">Belum ada barang. Cari barang di atas untuk menambahkan.</div>}

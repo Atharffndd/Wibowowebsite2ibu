@@ -179,6 +179,10 @@ Ambil definisi terbaru: `select pg_get_functiondef('public.save_sale(jsonb)'::re
 
 ---
 
+- 5 Okt 2026 — Tampilan ramah iPad (sama dengan PR #8 Tiga Putra): menu ☰ di bawah 1024px, isian barang berbentuk kartu, bar Simpan bawah, kolom isian 16px/44px untuk layar sentuh.
+
+---
+
 ## 9. Masalah terbuka
 - 46 barang berharga 0 (dari `#NUM!` di Excel) — perlu diisi harga di menu Barang & Harga.
 - Barang dobel ("- 2" / "(pcs)") — pemilik perlu konfirmasi: gabung, ganti nama, atau nonaktifkan.

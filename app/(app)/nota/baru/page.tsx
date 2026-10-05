@@ -7,6 +7,7 @@ import { loadCustomers, loadProducts, loadStockAll, type StockAll } from "@/lib/
 import { addDays, num, rp, tglPendek, today } from "@/lib/format";
 import type { Customer, LineItem, Product, Sale, SaleItem } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
+import { MobileSaveBar } from "@/components/MobileSaveBar";
 import { ItemsEditor, addBack, itemsPayload, itemsSubtotal, newKey } from "@/components/ItemsEditor";
 import { Button, Card, ErrorBox, Field, Input, Loading, NumInput, PageHeader, Select, Textarea } from "@/components/ui";
 
@@ -301,6 +302,7 @@ function NotaForm() {
           </Card>
         </div>
       </div>
+      <MobileSaveBar total={total} label={editId ? "Simpan perubahan" : "Simpan nota"} busy={busy} onSave={save} error={error} />
     </>
   );
 }

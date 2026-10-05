@@ -16,6 +16,35 @@ html,
 body {
   background: var(--color-page);
   color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Isi grid boleh menyusut (tabel lebar tidak mendorong halaman keluar layar) */
+.grid > * {
+  min-width: 0;
+}
+
+/* ===== Layar sentuh (iPad / HP) ===== */
+@media (pointer: coarse) {
+  /* >= 16px agar Safari iPad tidak memperbesar halaman saat mengetik */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+  button {
+    min-height: 40px;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+  .data-table td {
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+  }
 }
 
 .data-table th {

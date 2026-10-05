@@ -48,18 +48,18 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <AppProvider>
-      <div className="min-h-screen md:flex">
-        {/* Topbar mobile */}
-        <div className="md:hidden no-print sticky top-0 z-30 flex items-center justify-between bg-white border-b border-line px-4 py-3">
-          <button onClick={() => setOpen(!open)} className="text-2xl leading-none" aria-label="Menu">☰</button>
+      <div className="min-h-dvh lg:flex">
+        {/* Topbar HP & iPad tegak: menu dibuka lewat tombol ☰ */}
+        <div className="lg:hidden no-print sticky top-0 z-30 flex items-center justify-between bg-white border-b border-line px-3 py-2">
+          <button onClick={() => setOpen(!open)} className="flex h-11 w-11 items-center justify-center rounded-lg text-2xl leading-none hover:bg-slate-50" aria-label="Menu">☰</button>
           <span className="font-bold text-brand">Wibowo</span>
-          <span className="w-6" />
+          <span className="w-11" />
         </div>
 
         <aside
           className={cx(
-            "no-print fixed md:sticky top-0 z-40 h-screen w-64 shrink-0 bg-white border-r border-line flex flex-col transition-transform",
-            open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+            "no-print fixed lg:sticky top-0 z-40 h-dvh w-64 lg:w-56 xl:w-64 shrink-0 bg-white border-r border-line flex flex-col transition-transform",
+            open ? "translate-x-0 shadow-xl" : "-translate-x-full lg:translate-x-0",
           )}
         >
           <div className="px-5 py-4 border-b border-line">
@@ -75,7 +75,7 @@ export function Shell({ children }: { children: ReactNode }) {
                     key={it.href}
                     href={it.href}
                     className={cx(
-                      "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm",
+                      "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 lg:py-2 text-sm",
                       isActive(it.href) ? "bg-brand-soft text-brand-dark font-semibold" : "text-ink hover:bg-slate-50",
                     )}
                   >
@@ -88,9 +88,9 @@ export function Shell({ children }: { children: ReactNode }) {
           </nav>
           <div className="border-t border-line p-3 text-xs text-muted">Wibowo Supplier · Pasar Wage, Purwokerto</div>
         </aside>
-        {open && <div className="fixed inset-0 z-30 bg-black/30 md:hidden no-print" onClick={() => setOpen(false)} />}
+        {open && <div className="fixed inset-0 z-30 bg-black/30 lg:hidden no-print" onClick={() => setOpen(false)} />}
 
-        <main className="flex-1 min-w-0 p-4 md:p-8">{children}</main>
+        <main className="flex-1 min-w-0 p-4 md:p-6 xl:p-8">{children}</main>
       </div>
     </AppProvider>
   );

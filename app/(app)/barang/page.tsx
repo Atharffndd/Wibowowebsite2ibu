@@ -201,7 +201,7 @@ export default function BarangPage() {
                 const low = Number(p.min_stock) > 0 && Number(p.stock_total) <= Number(p.min_stock);
                 return (
                   <tr key={p.id} className={p.active ? "" : "opacity-50"}>
-                    <td>
+                    <td className="min-w-44">
                       <Link href={`/barang/${p.id}`} className="font-medium text-brand hover:underline">
                         {p.name}
                       </Link>
