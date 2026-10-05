@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { sb } from "@/lib/supabase";
 import { useAsync } from "@/lib/hooks";
 import { num, rp, tanggal } from "@/lib/format";
 import { balance, type DeliveryNote, type Sale, type SaleItem } from "@/lib/types";
-import { printAs } from "@/lib/suratJalan";
 import { useApp } from "@/components/AppContext";
 import { Invoice } from "@/components/Invoice";
+import { ShareDoc } from "@/components/ShareDoc";
 import { PaymentList, PaymentModal, type Payment } from "@/components/Payments";
 import { payStatus } from "@/components/status";
 import { Badge, Button, Card, ErrorBox, Loading } from "@/components/ui";
@@ -20,6 +20,7 @@ export default function NotaDetail() {
   const { settings, warehouses } = useApp();
   const [payOpen, setPayOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const docRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("saved")) setJustSaved(true);
@@ -57,8 +58,8 @@ export default function NotaDetail() {
     else reload();
   }
 
-  function shareWA() {
-    const lines = [
+  function notaWAText() {
+    return [
       `*${settings.company_name} Supplier*`,
       `Nota: ${sale.number}`,
       `Tanggal: ${tanggal(sale.date)}`,
@@ -71,9 +72,9 @@ export default function NotaDetail() {
       "",
       `Pembayaran${settings.account_name ? " a.n. " + settings.account_name : ""}:`,
       ...settings.banks.map((b) => `${b.bank} ${b.number}`),
-    ].filter((l): l is string => l !== null);
-    const to = phone.replace(/\D/g, "").replace(/^0/, "62");
-    window.open(`https://wa.me/${to}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+    ]
+      .filter((l): l is string => l !== null)
+      .join("\n");
   }
 
   return (
@@ -89,10 +90,13 @@ export default function NotaDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => printAs(`Nota ${sale.number}`)}>🖨 Cetak / PDF</Button>
-          <Button variant="secondary" onClick={shareWA}>
-            WhatsApp
-          </Button>
+          <ShareDoc
+            docRef={docRef}
+            fileName={`Nota ${sale.number}`}
+            caption={`Nota ${sale.number} — ${settings.company_name} Supplier · Total ${rp(sale.total)}`}
+            waText={notaWAText()}
+            phone={phone}
+          />
           {sale.status === "aktif" && (
             <>
               <Button variant="secondary" onClick={() => router.push(`/surat-jalan/baru?nota=${sale.id}`)}>
@@ -137,7 +141,9 @@ export default function NotaDetail() {
 
       <div className="grid xl:grid-cols-[1fr_320px] gap-4 items-start">
         <div className="print-area bg-white border border-line rounded-xl p-6 md:p-10 max-w-[210mm] shadow-sm overflow-x-auto">
-          <Invoice sale={sale} items={items} settings={settings} warehouses={warehouses} />
+          <div ref={docRef}>
+            <Invoice sale={sale} items={items} settings={settings} warehouses={warehouses} />
+          </div>
         </div>
 
         <div className="no-print space-y-4">

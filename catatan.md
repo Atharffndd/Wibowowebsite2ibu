@@ -172,6 +172,8 @@ Ambil definisi terbaru: `select pg_get_functiondef('public.save_sale(jsonb)'::re
 - Pemilik bisa sedang memakai website saat Claude bekerja → **cek ulang data terbaru sebelum memperbaiki data**.
 - Perbaikan data dilakukan lewat fungsi resmi (`save_purchase`, `save_sale`, `save_adjustment`) agar HPP & stok konsisten — bukan UPDATE langsung ke mutasi.
 
+- Cetak: `@page { margin: 0 }` + padding 12mm di `.print-area` agar browser tidak mencetak header/footer (URL, tanggal, nomor halaman). Jangan kembalikan margin @page. PDF memotong halaman di `tbody tr`, `.pdf-keep`, `.sj-sign`; tabel barang wajib class `items-table`.
+
 ---
 
 ## 8. Riwayat
@@ -180,6 +182,7 @@ Ambil definisi terbaru: `select pg_get_functiondef('public.save_sale(jsonb)'::re
 ---
 
 - 5 Okt 2026 — Tampilan ramah iPad (sama dengan PR #8 Tiga Putra): menu ☰ di bawah 1024px, isian barang berbentuk kartu, bar Simpan bawah, kolom isian 16px/44px untuk layar sentuh.
+- 5 Okt 2026 — WhatsApp Nota & Surat Jalan kirim file PDF (menu Bagikan), Unduh PDF langsung, hapus header/footer cetak & baris "Nota: …" di Surat Jalan (sama dengan PR #9 Tiga Putra).
 
 ---
 

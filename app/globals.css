@@ -83,9 +83,10 @@ body {
 }
 
 @media print {
+  /* margin 0 = browser tidak mencetak header/footer (URL, tanggal, nomor halaman) */
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 0;
   }
   html,
   body {
@@ -98,7 +99,9 @@ body {
     box-shadow: none !important;
     border: none !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 12mm !important;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
     max-width: none !important;
     overflow: visible !important;
   }

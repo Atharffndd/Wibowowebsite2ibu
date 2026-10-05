@@ -62,7 +62,7 @@ export function Invoice({ sale, items, settings, warehouses = [] }: { sale: Sale
       </div>
 
       {/* Tabel barang */}
-      <table className="w-full border-collapse">
+      <table className="items-table w-full border-collapse">
         <thead>
           <tr className="mono text-[12px] font-bold border-b-2 border-black">
             <th className="text-left py-1.5 w-8">#</th>
@@ -97,7 +97,7 @@ export function Invoice({ sale, items, settings, warehouses = [] }: { sale: Sale
       <div className="border-t border-neutral-500" />
 
       {/* Total */}
-      <div className="flex justify-end mt-2">
+      <div className="pdf-keep flex justify-end mt-2">
         <table className="mono text-right">
           <tbody>
             {hasExtras && (
@@ -134,7 +134,7 @@ export function Invoice({ sale, items, settings, warehouses = [] }: { sale: Sale
 
       {sale.notes && <div className="mt-3 text-[12px]"><b>Catatan:</b> {sale.notes}</div>}
 
-      <div className="border-t border-neutral-400 mt-5 pt-3">
+      <div className="pdf-keep border-t border-neutral-400 mt-5 pt-3">
         <div className="font-bold mb-1.5">Info Pembayaran{settings.account_name ? ` A.N. ${settings.account_name}` : ""}</div>
         <div className="grid grid-cols-3 gap-x-6 gap-y-1 mono text-[12.5px]">
           {settings.banks.map((b, i) => (
@@ -152,7 +152,7 @@ export function Invoice({ sale, items, settings, warehouses = [] }: { sale: Sale
       </div>
 
       {/* TTD + paraf (wajib di setiap nota) */}
-      <div className="flex justify-end mt-4">
+      <div className="pdf-keep flex justify-end mt-4">
         <div className="text-center w-96">
           <div className="mb-1">Hormat kami,</div>
           {/* eslint-disable-next-line @next/next/no-img-element */}

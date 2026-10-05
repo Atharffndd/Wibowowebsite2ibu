@@ -67,7 +67,7 @@ export function SuratJalan({ sj, sale, items, settings }: { sj: SuratJalanData; 
       </div>
 
       {/* Tabel barang — header berulang di tiap halaman cetak */}
-      <table className="sj-table w-full border-collapse">
+      <table className="sj-table items-table w-full border-collapse">
         <thead>
           <tr className="mono text-[12px] font-bold border-y-2 border-black">
             <th className="text-left py-1.5 w-12">NO.</th>
@@ -94,7 +94,6 @@ export function SuratJalan({ sj, sale, items, settings }: { sj: SuratJalanData; 
           <b>Catatan:</b> {sj.notes}
         </div>
       )}
-      <div className="mt-2 text-[11px] text-neutral-600">Nota: {sale.number}</div>
 
       {/* Tanda tangan — tidak terpotong antar halaman */}
       <div className="sj-sign grid grid-cols-2 gap-10 mt-6">

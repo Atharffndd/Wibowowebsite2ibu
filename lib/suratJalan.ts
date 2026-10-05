@@ -27,15 +27,8 @@ export async function loadDeliveryNotes(saleId: string): Promise<DeliveryNote[]>
 }
 
 /** Nama file PDF saat "Simpan sebagai PDF" di dialog cetak */
-export function printAs(title: string) {
-  const prev = document.title;
-  document.title = title.replace(/[\\/:*?"<>|]/g, "-");
-  window.print();
-  setTimeout(() => (document.title = prev), 1000);
-}
-
-/** Kirim ringkasan Surat Jalan lewat WhatsApp (mekanisme sama dengan nota) */
-export function shareSuratJalanWA(sj: DeliveryNote, src: NotaSource, settings: Settings) {
+/** Teks ringkasan Surat Jalan untuk WhatsApp */
+export function suratJalanWAText(sj: DeliveryNote, src: NotaSource, settings: Settings): string {
   const rows = mergeRows(src.items, src.sale);
   const lines = [
     `*${settings.company_name} Supplier*`,
@@ -48,6 +41,5 @@ export function shareSuratJalanWA(sj: DeliveryNote, src: NotaSource, settings: S
     ...rows.map((r, i) => `${i + 1}. ${qty(r.qty)} ${r.unit} — ${r.name}`),
     sj.notes ? `\nCatatan: ${sj.notes}` : null,
   ].filter((l): l is string => l !== null);
-  const to = (src.phone ?? "").replace(/\D/g, "").replace(/^0/, "62");
-  window.open(`https://wa.me/${to}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+  return lines.join("\n");
 }
