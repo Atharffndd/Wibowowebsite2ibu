@@ -8,6 +8,7 @@ import { num, rp, today } from "@/lib/format";
 import type { LineItem, Product, Purchase, Supplier } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
 import { MobileSaveBar } from "@/components/MobileSaveBar";
+import { NameCombo } from "@/components/NameCombo";
 import { ItemsEditor, addBack, itemsPayload, itemsSubtotal, newKey } from "@/components/ItemsEditor";
 import { Button, Card, ErrorBox, Field, Input, Loading, NumInput, PageHeader, Select, Textarea } from "@/components/ui";
 
@@ -101,12 +102,12 @@ function PurchaseForm() {
     setError(null);
     if (itemsPayload(items).length === 0) return setError("Tambahkan minimal 1 barang.");
     setBusy(true);
-    const { data, error } = await sb().rpc("save_purchase", {
+    const { data, error } = await sb().rpc("save_purchase_ex", {
       p: {
         id: editId,
         date,
         supplier_id: supplierId || null,
-        supplier_name: supplierName || null,
+        supplier_name: supplierName.trim() || null,
         supplier_ref: supplierRef || null,
         due_date: dueDate || null,
         notes: notes || null,
@@ -137,27 +138,18 @@ function PurchaseForm() {
         <div className="lg:col-span-2 space-y-4">
           <Card>
             <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Supplier">
-                <Select
-                  value={supplierId}
-                  onChange={(e) => {
-                    setSupplierId(e.target.value);
-                    setSupplierName(suppliers.find((s) => s.id === e.target.value)?.name ?? "");
+              <Field label="Supplier (pilih atau ketik nama baru)">
+                <NameCombo
+                  value={supplierName}
+                  options={suppliers.map((s) => ({ id: s.id, name: s.name, sub: s.phone }))}
+                  onChange={(name, id) => {
+                    setSupplierName(name);
+                    setSupplierId(id ?? "");
                   }}
-                >
-                  <option value="">— Tanpa supplier / lainnya —</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </Select>
+                  placeholder="Ketik nama supplier…"
+                  newLabel="Supplier baru"
+                />
               </Field>
-              {!supplierId && (
-                <Field label="Nama supplier (bebas)">
-                  <Input value={supplierName} onChange={(e) => setSupplierName(e.target.value)} />
-                </Field>
-              )}
               <Field label="No. faktur / nota supplier">
                 <Input value={supplierRef} onChange={(e) => setSupplierRef(e.target.value)} />
               </Field>
@@ -175,6 +167,7 @@ function PurchaseForm() {
               warehouses={warehouses}
               stockAll={stockAll}
               priceLabel="Harga beli"
+              allowNew
               hint={(it) => {
                 const p = products.find((x) => x.id === it.product_id);
                 return p && Number(p.avg_cost) > 0 ? <span>HPP saat ini: {num(Number(p.avg_cost) * it.factor)}/{it.unit}</span> : null;

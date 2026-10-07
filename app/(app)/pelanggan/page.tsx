@@ -7,7 +7,7 @@ import { useAsync } from "@/lib/hooks";
 import { exportXlsx } from "@/lib/excel";
 import { num } from "@/lib/format";
 import type { Customer } from "@/lib/types";
-import { Badge, Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Table } from "@/components/ui";
+import { Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Table } from "@/components/ui";
 import { CustomerModal } from "@/components/CustomerModal";
 
 export default function PelangganPage() {
@@ -40,7 +40,7 @@ export default function PelangganPage() {
     <>
       <PageHeader
         title="Pelanggan"
-        subtitle="Data pelanggan, tipe harga (eceran/grosir), tempo, harga khusus & riwayat belanja."
+        subtitle="Data pelanggan, tempo, harga khusus & riwayat belanja."
         actions={
           <>
             <Button
@@ -48,7 +48,6 @@ export default function PelangganPage() {
               onClick={() =>
                 exportXlsx("pelanggan", "Pelanggan", [
                   { header: "Nama", key: "name", width: 30 },
-                  { header: "Tipe harga", key: "price_type" },
                   { header: "Telepon", key: "phone" },
                   { header: "Alamat", key: "address", width: 40 },
                   { header: "Tempo (hari)", key: "term_days" },
@@ -77,7 +76,6 @@ export default function PelangganPage() {
             <thead>
               <tr>
                 <th>Nama</th>
-                <th>Tipe</th>
                 <th>Telepon</th>
                 <th className="text-right">Jml nota</th>
                 <th className="text-right">Total belanja</th>
@@ -95,9 +93,6 @@ export default function PelangganPage() {
                         {c.name}
                       </Link>
                       {c.address && <div className="text-xs text-muted truncate max-w-64">{c.address}</div>}
-                    </td>
-                    <td>
-                      <Badge tone={c.price_type === "grosir" ? "info" : "neutral"}>{c.price_type}</Badge>
                     </td>
                     <td>{c.phone || "-"}</td>
                     <td className="num">{st?.count ?? 0}</td>

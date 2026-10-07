@@ -34,7 +34,7 @@ export function Field({ label, children, hint, className }: { label: string; chi
   );
 }
 
-const inputCls = "w-full rounded-lg border border-line bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand";
+export const inputCls = "w-full rounded-lg border border-line bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand";
 
 export function Input(p: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...p} className={cx(inputCls, p.className)} />;

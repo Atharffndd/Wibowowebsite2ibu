@@ -17,7 +17,9 @@ Bahasa tampilan & komunikasi dengan pemilik: **Bahasa Indonesia**. Mata uang Rup
 - Cap + tanda tangan: `public/ttd.png` (kotak biru "Kios Wibowo" + paraf) — **wajib tampil di setiap nota & Surat Jalan** (bisa diganti di Pengaturan).
 - Gudang **Gudang 1-P** & **Gudang 2-R**, dipilih per barang (default 1-P). Nota cetak tidak menampilkan gudang & menggabungkan baris sama.
 - Nomor nota `INV/YYYY/MM/NNNN` (reset tiap bulan). PPN tidak dipakai. HPP rata-rata tertimbang.
-- Surat Jalan dari nota (kendaraan Mobil/Pick-up; B 2914 WFK / R 8287 AM / Z 9016 HB).
+- Surat Jalan dari nota atau **tanpa nota** (`delivery_note_items`, nomor `SJ/YYYY/MM/NNNN`, tidak mengurangi stok); kendaraan Mobil/Pick-up; B 2914 WFK / R 8287 AM / Z 9016 HB.
+- **Satu "Harga jual" per satuan** (opsi grosir/eceran dihapus; `price_retail` = `price_wholesale`).
+- **Ketik baru:** pelanggan/supplier/barang belum terdaftar boleh diketik langsung di Nota, Barang Masuk, Retur & Surat Jalan tanpa nota; tersimpan otomatis saat disimpan (`resolve_new`, `c_auto_stock = false` karena stok boleh minus).
 - Data awal: 605 barang & 89 pelanggan dari Excel pemilik; supplier masih kosong.
 
 ## Keputusan pemilik (jangan diubah tanpa diminta)
@@ -28,7 +30,7 @@ Bahasa tampilan & komunikasi dengan pemilik: **Bahasa Indonesia**. Mata uang Rup
 
 ## Teknis
 - Next.js 16 + Tailwind 4 + `@supabase/supabase-js`, recharts, exceljs. Semua halaman client component.
-- Fungsi Postgres: `save_sale`, `save_purchase`, `cancel_document`, `save_return`, `void_return`, `save_adjustment`, `recompute_avg_cost`, `report_sales`, `dashboard_stats`, `next_doc_number`, `default_warehouse`.
+- Fungsi Postgres: `save_sale`, `save_purchase`, `cancel_document`, `save_return`, `void_return`, `save_adjustment`, `recompute_avg_cost`, `report_sales`, `dashboard_stats`, `next_doc_number`, `default_warehouse`, `resolve_new`, `save_delivery_note`; UI memanggil `save_sale_ex` / `save_purchase_ex` / `save_return_ex` (= `resolve_new` + fungsi asli).
 - Cek sebelum push: `npx tsc --noEmit && npm run build`. Sandbox Claude tidak bisa membuka vercel.app/supabase.co; verifikasi DB lewat MCP `execute_sql` dalam transaksi tanpa commit.
 - Perubahan fitur yang juga relevan untuk Tiga Putra sebaiknya ditawarkan ke repo `Atharffndd/Wibowowebsite` juga.
 

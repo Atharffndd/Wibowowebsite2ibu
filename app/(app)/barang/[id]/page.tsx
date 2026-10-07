@@ -127,8 +127,7 @@ export default function ProductDetail() {
                 <tr>
                   <th>Tanggal</th>
                   <th>Sat.</th>
-                  <th className="text-right">Eceran</th>
-                  <th className="text-right">Grosir</th>
+                  <th className="text-right">Harga jual</th>
                 </tr>
               </thead>
               <tbody>
@@ -136,8 +135,7 @@ export default function ProductDetail() {
                   <tr key={h.id}>
                     <td>{tglPendek(h.changed_at)}</td>
                     <td>{h.unit}</td>
-                    <td className="num">{num(h.price_retail)}</td>
-                    <td className="num">{num(h.price_wholesale)}</td>
+                    <td className="num">{num(Number(h.price_wholesale) || Number(h.price_retail))}</td>
                   </tr>
                 ))}
               </tbody>

@@ -8,6 +8,7 @@ import { addDays, num, rp, tglPendek, today } from "@/lib/format";
 import type { Customer, LineItem, Product, Sale, SaleItem } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
 import { MobileSaveBar } from "@/components/MobileSaveBar";
+import { NameCombo } from "@/components/NameCombo";
 import { ItemsEditor, addBack, itemsPayload, itemsSubtotal, newKey } from "@/components/ItemsEditor";
 import { Button, Card, ErrorBox, Field, Input, Loading, NumInput, PageHeader, Select, Textarea } from "@/components/ui";
 
@@ -126,13 +127,12 @@ function NotaForm() {
     })();
   }, [customerId]);
 
-  function pickCustomer(id: string) {
-    setCustomerId(id);
-    const c = customers.find((x) => x.id === id);
-    if (c) {
-      setCustomerName(c.name);
-      setDueDate(c.term_days > 0 ? addDays(date, c.term_days) : "");
-    }
+  function pickCustomer(name: string, id: string | null) {
+    setCustomerName(name);
+    setCustomerId(id ?? "");
+    const c = id ? customers.find((x) => x.id === id) : undefined;
+    if (c && c.id !== customerId) setDueDate(c.term_days > 0 ? addDays(date, c.term_days) : "");
+    else if (!c && customerId) setDueDate(""); // ganti ke pelanggan baru: tempo pelanggan lama tidak ikut
   }
 
   const priceFor = useCallback(
@@ -141,9 +141,9 @@ function NotaForm() {
       if (sp !== undefined) return sp;
       const u = p.product_units?.find((x) => x.unit === unit);
       if (!u) return 0;
-      return Number(customer?.price_type === "grosir" ? u.price_wholesale || u.price_retail : u.price_retail || u.price_wholesale);
+      return Number(u.price_wholesale || u.price_retail);
     },
-    [specialPrices, customer],
+    [specialPrices],
   );
 
   const subtotal = itemsSubtotal(items);
@@ -174,7 +174,7 @@ function NotaForm() {
     if (!customerName.trim()) return setError("Isi nama pelanggan.");
     if (itemsPayload(items).length === 0) return setError("Tambahkan minimal 1 barang.");
     setBusy(true);
-    const { data, error } = await sb().rpc("save_sale", {
+    const { data, error } = await sb().rpc("save_sale_ex", {
       p: {
         id: editId,
         date,
@@ -207,18 +207,14 @@ function NotaForm() {
         <div className="lg:col-span-2 space-y-4">
           <Card>
             <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Pelanggan terdaftar">
-                <Select value={customerId} onChange={(e) => pickCustomer(e.target.value)}>
-                  <option value="">— Pelanggan baru / umum —</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} {c.price_type === "grosir" ? "(grosir)" : ""}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Nama di nota (Kepada)">
-                <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Nama pelanggan" />
+              <Field label="Pelanggan (Kepada) — pilih atau ketik nama baru">
+                <NameCombo
+                  value={customerName}
+                  options={customers.map((c) => ({ id: c.id, name: c.name, sub: c.address }))}
+                  onChange={pickCustomer}
+                  placeholder="Ketik nama pelanggan…"
+                  newLabel="Pelanggan baru"
+                />
               </Field>
               <Field label="Tanggal">
                 <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -226,12 +222,10 @@ function NotaForm() {
             </div>
           </Card>
           <Card title="Barang">
-            <ItemsEditor items={items} setItems={setItems} products={products} priceFor={priceFor} warehouses={warehouses} stockAll={stockAll} checkStock priceLabel="Harga jual" hint={hint} />
-            {customer && (
-              <p className="text-xs text-muted mt-3">
-                Harga otomatis: harga khusus pelanggan → harga {customer.price_type}. Harga tetap bisa diubah manual per nota.
-              </p>
-            )}
+            <ItemsEditor items={items} setItems={setItems} products={products} priceFor={priceFor} warehouses={warehouses} stockAll={stockAll} checkStock priceLabel="Harga jual" hint={hint} allowNew />
+            <p className="text-xs text-muted mt-3">
+              Harga otomatis: {customer ? "harga khusus pelanggan → " : ""}harga jual barang. Harga tetap bisa diubah manual per nota.
+            </p>
           </Card>
           <Card>
             <Field label="Catatan (tampil di nota)">

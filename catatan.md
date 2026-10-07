@@ -92,7 +92,7 @@ lib/
   supabase.ts           client + fetchAll (lewati limit 1000 baris)
   hooks.ts              useAsync, loadProducts/Customers/Suppliers, loadStockAll
   types.ts, format.ts (rp, tanggal Indonesia), excel.ts
-supabase/migrations/    0001,0002,0004,0005 (dari Tiga Putra) + 0006_wibowo_perbedaan (catatan; diterapkan lewat MCP)
+supabase/migrations/    0001,0002,0004,0005 (dari Tiga Putra) + 0006_wibowo_perbedaan + 0007_ketik_baru_sj_mandiri (diterapkan lewat MCP)
 public/ttd.png          cap Kios Wibowo + tanda tangan
 ```
 
@@ -104,7 +104,7 @@ public/ttd.png          cap Kios Wibowo + tanda tangan
 | `categories` | name |
 | `products` | sku, name, category_id, base_unit, **avg_cost** (HPP/satuan dasar), min_stock, active |
 | `product_units` | product_id, unit, factor, price_retail, price_wholesale (trigger → `price_history`) |
-| `customers` | name, price_type (eceran/grosir), phone, address, term_days |
+| `customers` | name, price_type (tidak dipakai lagi, selalu grosir), phone, address, term_days |
 | `customer_prices` | harga khusus per pelanggan/produk/satuan |
 | `suppliers` | name, contact, phone, address, bank_info |
 | `sales` / `sale_items` | header nota / item (`warehouse_id`, `cost_per_base` = HPP saat transaksi, `active`) |
@@ -122,6 +122,9 @@ Tipe mutasi: `opening, purchase, sale, sale_return, purchase_return, adjust, tra
 ### Fungsi Postgres (RPC)
 | Fungsi | Guna |
 |---|---|
+| `resolve_new(p, kind)` | sale/purchase/return/delivery: cari/buat pelanggan, supplier & barang berdasar nama. Barang baru: satuan diketik, isi 1, harga jual = harga nota. Wibowo tidak memberi stok awal otomatis (`c_auto_stock = false`) |
+| `save_sale_ex` / `save_purchase_ex` / `save_return_ex` | `resolve_new` + fungsi asli (dipakai UI) |
+| `save_delivery_note(p jsonb)` | Surat Jalan tanpa nota, nomor otomatis `SJ/…`, tidak mengurangi stok |
 | `save_sale(p jsonb)` | buat/ubah nota. `p.id` kosong = baru. Item: `{product_id,name,qty,unit,factor,price,warehouse_id}`. Juga `discount, shipping, tax_percent, paid_now, payment_method, due_date, notes, customer_id, customer_name, date` |
 | `save_purchase(p jsonb)` | buat/koreksi barang masuk, lalu `recompute_avg_cost` |
 | `cancel_document(kind, id)` | batal nota (`sale`) / barang masuk (`purchase`) |
@@ -183,6 +186,8 @@ Ambil definisi terbaru: `select pg_get_functiondef('public.save_sale(jsonb)'::re
 
 - 5 Okt 2026 — Tampilan ramah iPad (sama dengan PR #8 Tiga Putra): menu ☰ di bawah 1024px, isian barang berbentuk kartu, bar Simpan bawah, kolom isian 16px/44px untuk layar sentuh.
 - 5 Okt 2026 — WhatsApp Nota & Surat Jalan kirim file PDF (menu Bagikan), Unduh PDF langsung, hapus header/footer cetak & baris "Nota: …" di Surat Jalan (sama dengan PR #9 Tiga Putra).
+- 5 Okt 2026 — Cap & paraf digambar langsung ke kanvas PDF (hilang di Safari iPad).
+- 7 Okt 2026 — Opsi grosir/eceran dihapus (1 harga jual); pelanggan/supplier/barang baru bisa diketik langsung; setelah pilih barang kursor ke Jumlah → Enter Harga → Enter cari barang; Surat Jalan tanpa nota. (Sama dengan PR #12 Tiga Putra.)
 
 ---
 

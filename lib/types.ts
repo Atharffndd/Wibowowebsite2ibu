@@ -131,7 +131,8 @@ export const balance = (d: { total: number; paid_amount: number; return_amount: 
 
 export type DeliveryNote = {
   id: string;
-  sale_id: string;
+  /** null = Surat Jalan tanpa nota (barang di delivery_note_items) */
+  sale_id: string | null;
   number: string;
   date: string;
   recipient_name: string;

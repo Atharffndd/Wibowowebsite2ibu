@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { sb } from "@/lib/supabase";
 import { useAsync } from "@/lib/hooks";
 import { useRef } from "react";
-import { loadNotaSource, suratJalanWAText } from "@/lib/suratJalan";
+import { loadSJSource, suratJalanWAText } from "@/lib/suratJalan";
 import type { DeliveryNote } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
 import { SuratJalan } from "@/components/SuratJalan";
@@ -22,7 +22,7 @@ export default function SuratJalanDetail() {
     const { data, error } = await sb().from("delivery_notes").select("*").eq("id", id).single();
     if (error) throw error;
     const sj = data as DeliveryNote;
-    return { sj, src: await loadNotaSource(sj.sale_id) };
+    return { sj, src: await loadSJSource(sj) };
   }, [id]);
 
   if (loading && !data) return <Loading />;
@@ -41,9 +41,15 @@ export default function SuratJalanDetail() {
     <>
       <div className="no-print flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <Link href={`/nota/${src.sale.id}`} className="text-sm text-brand hover:underline">
-            ‹ Nota {src.sale.number}
-          </Link>
+          {src.sale ? (
+            <Link href={`/nota/${src.sale.id}`} className="text-sm text-brand hover:underline">
+              ‹ Nota {src.sale.number}
+            </Link>
+          ) : (
+            <Link href="/surat-jalan" className="text-sm text-brand hover:underline">
+              ‹ Surat Jalan (tanpa nota)
+            </Link>
+          )}
           <div className="flex items-center gap-2 mt-1">
             <h1 className="text-xl font-bold">
               Surat Jalan <span className="font-mono">{sj.number}</span>
@@ -72,7 +78,7 @@ export default function SuratJalanDetail() {
           )}
         </div>
       </div>
-      {src.sale.status === "batal" && <div className="no-print mb-3 rounded-lg bg-red-50 text-red-700 text-sm px-3 py-2">Nota sumber sudah dibatalkan.</div>}
+      {src.sale?.status === "batal" && <div className="no-print mb-3 rounded-lg bg-red-50 text-red-700 text-sm px-3 py-2">Nota sumber sudah dibatalkan.</div>}
       <div className="print-area bg-white border border-line rounded-xl p-6 md:p-10 max-w-[210mm] shadow-sm overflow-x-auto">
         <div ref={docRef}>
           <SuratJalan sj={sj} sale={src.sale} items={src.items} settings={settings} />

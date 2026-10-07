@@ -46,8 +46,7 @@ export default function BarangPage() {
           satuan: u.unit,
           isi: Number(u.factor),
           satuan_dasar: p.base_unit,
-          harga_eceran: Number(u.price_retail),
-          harga_grosir: Number(u.price_wholesale),
+          harga_jual: Number(u.price_wholesale) || Number(u.price_retail),
           hpp: Math.round(Number(p.avg_cost) * Number(u.factor)),
           stok: Number(p.stock_total),
           stok_minimal: Number(p.min_stock),
@@ -59,8 +58,7 @@ export default function BarangPage() {
       { header: "Satuan", key: "satuan", width: 10 },
       { header: "Isi (x satuan dasar)", key: "isi", width: 10 },
       { header: "Satuan Dasar", key: "satuan_dasar", width: 10 },
-      { header: "Harga Eceran", key: "harga_eceran", numFmt: "#,##0" },
-      { header: "Harga Grosir", key: "harga_grosir", numFmt: "#,##0" },
+      { header: "Harga Jual", key: "harga_jual", numFmt: "#,##0" },
       { header: "HPP", key: "hpp", numFmt: "#,##0" },
       { header: "Stok (satuan dasar)", key: "stok" },
       { header: "Stok Minimal", key: "stok_minimal" },
@@ -80,8 +78,7 @@ export default function BarangPage() {
         if (!name) continue;
         const unit = String(pick(r, "satuan", "sat", "unit") ?? "pcs").trim() || "pcs";
         const factor = Number(pick(r, "isi", "isi (x satuan dasar)", "konversi") ?? 1) || 1;
-        const retail = Number(pick(r, "harga eceran", "harga standar", "harga", "harga jual") ?? 0) || 0;
-        const wholesale = Number(pick(r, "harga grosir") ?? retail) || 0;
+        const harga = Number(pick(r, "harga jual", "harga grosir", "harga", "harga standar", "harga eceran") ?? 0) || 0;
         const catName = String(pick(r, "kategori") ?? "").trim();
         const sku = pick(r, "kode", "sku");
         const minStock = Number(pick(r, "stok minimal", "min stok") ?? 0) || 0;
@@ -117,7 +114,7 @@ export default function BarangPage() {
         }
         const { error: ue } = await sb()
           .from("product_units")
-          .upsert({ product_id: p.id, unit, factor, price_retail: retail, price_wholesale: wholesale }, { onConflict: "product_id,unit" });
+          .upsert({ product_id: p.id, unit, factor, price_retail: harga, price_wholesale: harga }, { onConflict: "product_id,unit" });
         if (ue) throw ue;
       }
       setImportMsg(`Import selesai: ${created} barang baru, ${updated} barang diperbarui.`);
@@ -131,7 +128,7 @@ export default function BarangPage() {
     <>
       <PageHeader
         title="Barang & Harga"
-        subtitle="Daftar barang, satuan (dus, pcs, kg, …), harga eceran / grosir, dan HPP rata-rata."
+        subtitle="Daftar barang, satuan (dus, pcs, kg, …), harga jual, dan HPP rata-rata."
         actions={
           <>
             <Button variant="secondary" onClick={() => fileRef.current?.click()}>
@@ -190,7 +187,7 @@ export default function BarangPage() {
             <thead>
               <tr>
                 <th>Barang</th>
-                <th>Satuan & harga (eceran / grosir)</th>
+                <th>Satuan & harga jual</th>
                 <th className="text-right">HPP / sat. dasar</th>
                 <th className="text-right">Stok</th>
                 <th />
@@ -219,7 +216,7 @@ export default function BarangPage() {
                             <span className="inline-block min-w-12 font-medium">{u.unit}</span>
                             {Number(u.factor) !== 1 && <span className="text-xs text-muted"> ({qty(u.factor)} {p.base_unit}) </span>}
                             <span className="tabular-nums">
-                              {num(u.price_retail)} / {num(u.price_wholesale)}
+                              {num(Number(u.price_wholesale) || Number(u.price_retail))}
                             </span>
                           </div>
                         ))}
@@ -240,7 +237,7 @@ export default function BarangPage() {
           </Table>
         )}
         <p className="text-xs text-muted mt-4">
-          Format import Excel: kolom <b>Nama Barang</b>, <b>Satuan</b>, <b>Harga Eceran</b> (atau Harga Standar), opsional <b>Harga Grosir</b>, <b>Isi</b> (konversi ke satuan dasar), <b>Kategori</b>, <b>Kode</b>, <b>Stok Minimal</b>. Barang dengan nama sama akan diperbarui.
+          Format import Excel: kolom <b>Nama Barang</b>, <b>Satuan</b>, <b>Harga Jual</b> (atau Harga), <b>Isi</b> (konversi ke satuan dasar), <b>Kategori</b>, <b>Kode</b>, <b>Stok Minimal</b>. Barang dengan nama sama akan diperbarui.
         </p>
       </Card>
       {edit && (
@@ -269,7 +266,7 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
   const [active, setActive] = useState(product?.active ?? true);
   const [units, setUnits] = useState<ProductUnit[]>(
     product?.product_units?.length
-      ? product.product_units.map((u) => ({ ...u, factor: Number(u.factor), price_retail: Number(u.price_retail), price_wholesale: Number(u.price_wholesale) }))
+      ? product.product_units.map((u) => ({ ...u, factor: Number(u.factor), price_retail: Number(u.price_wholesale) || Number(u.price_retail), price_wholesale: Number(u.price_wholesale) || Number(u.price_retail) }))
       : [{ unit: product?.base_unit ?? "pcs", factor: 1, price_retail: 0, price_wholesale: 0 }],
   );
   const [error, setError] = useState<string | null>(null);
@@ -314,7 +311,7 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
             product_id: id,
             unit: u.unit.trim(),
             factor: u.unit.trim() === baseUnit.trim() ? 1 : u.factor,
-            price_retail: u.price_retail,
+            price_retail: u.price_wholesale,
             price_wholesale: u.price_wholesale,
           })),
           { onConflict: "product_id,unit" },
@@ -370,8 +367,7 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
                 <tr>
                   <th>Satuan</th>
                   <th className="text-right">Isi ({baseUnit})</th>
-                  <th className="text-right">Harga eceran</th>
-                  <th className="text-right">Harga grosir</th>
+                  <th className="text-right">Harga jual</th>
                   <th />
                 </tr>
               </thead>
@@ -387,10 +383,7 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
                         <NumInput value={isBase ? 1 : u.factor} disabled={isBase} onChange={(n) => setU(i, { factor: n })} className="py-1.5 min-w-20" />
                       </td>
                       <td>
-                        <NumInput value={u.price_retail} onChange={(n) => setU(i, { price_retail: n })} className="py-1.5 min-w-28" />
-                      </td>
-                      <td>
-                        <NumInput value={u.price_wholesale} onChange={(n) => setU(i, { price_wholesale: n })} className="py-1.5 min-w-28" />
+                        <NumInput value={u.price_wholesale} onChange={(n) => setU(i, { price_wholesale: n, price_retail: n })} className="py-1.5 min-w-28" />
                       </td>
                       <td>
                         {!isBase && (

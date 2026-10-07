@@ -4,10 +4,11 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { sb, errMsg } from "@/lib/supabase";
-import { loadProducts, loadStockAll, useAsync, type StockAll } from "@/lib/hooks";
+import { loadCustomers, loadProducts, loadStockAll, loadSuppliers, useAsync, type StockAll } from "@/lib/hooks";
 import { num, rp, tglPendek, today } from "@/lib/format";
 import type { LineItem, Product } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
+import { NameCombo, type ComboOption } from "@/components/NameCombo";
 import { ItemsEditor, itemsPayload, itemsSubtotal, newKey } from "@/components/ItemsEditor";
 import { Badge, Button, Card, Empty, ErrorBox, Field, Input, Loading, Modal, PageHeader, Select, Table } from "@/components/ui";
 
@@ -127,12 +128,18 @@ function ReturnModal({ saleId, purchaseId, onClose, onSaved }: { saleId: string 
   const [items, setItems] = useState<LineItem[]>([]);
   const [maxQty, setMaxQty] = useState<Record<string, number>>({});
   const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<ComboOption[]>([]);
+  const [suppliers, setSuppliers] = useState<ComboOption[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     loadProducts().then(setProducts);
     loadStockAll().then(setStockAll);
+    if (!saleId && !purchaseId) {
+      loadCustomers().then((c) => setCustomers(c.map((x) => ({ id: x.id, name: x.name }))));
+      loadSuppliers().then((s) => setSuppliers(s.map((x) => ({ id: x.id, name: x.name }))));
+    }
     (async () => {
       if (saleId) {
         const [{ data: s }, { data: its }] = await Promise.all([sb().from("sales").select("*").eq("id", saleId).single(), sb().from("sale_items").select("*").eq("sale_id", saleId).eq("active", true)]);
@@ -176,8 +183,9 @@ function ReturnModal({ saleId, purchaseId, onClose, onSaved }: { saleId: string 
     for (const it of items) if (maxQty[it.key] !== undefined && it.qty > maxQty[it.key]) return setError(`Jumlah retur ${it.name} melebihi jumlah di dokumen (${maxQty[it.key]}).`);
     setBusy(true);
     try {
-      const { error } = await sb().rpc("save_return", {
-        p: { kind, date, sale_id: saleId, purchase_id: purchaseId, party_name: party || null, notes: notes || null, items: payload },
+      // retur tanpa dokumen: pelanggan/supplier & barang baru otomatis tersimpan
+      const { error } = await sb().rpc(fromDoc ? "save_return" : "save_return_ex", {
+        p: { kind, date, sale_id: saleId, purchase_id: purchaseId, party_name: party.trim() || null, notes: notes || null, items: payload },
       });
       if (error) throw error;
       onSaved();
@@ -199,7 +207,17 @@ function ReturnModal({ saleId, purchaseId, onClose, onSaved }: { saleId: string 
             </Select>
           </Field>
           <Field label={kind === "sale" ? "Pelanggan" : "Supplier"}>
-            <Input value={party} onChange={(e) => setParty(e.target.value)} />
+            {fromDoc ? (
+              <Input value={party} onChange={(e) => setParty(e.target.value)} />
+            ) : (
+              <NameCombo
+                value={party}
+                options={kind === "sale" ? customers : suppliers}
+                onChange={(name) => setParty(name)}
+                placeholder={kind === "sale" ? "Ketik nama pelanggan…" : "Ketik nama supplier…"}
+                newLabel={kind === "sale" ? "Pelanggan baru" : "Supplier baru"}
+              />
+            )}
           </Field>
           <Field label="Tanggal">
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -255,7 +273,7 @@ function ReturnModal({ saleId, purchaseId, onClose, onSaved }: { saleId: string 
             </tbody>
           </table>
         ) : (
-          <ItemsEditor items={items} setItems={setItems} products={products} priceFor={(p, unit) => Number(p.product_units?.find((u) => u.unit === unit)?.price_retail ?? 0)} warehouses={warehouses} stockAll={stockAll} checkStock={kind === "purchase"} priceLabel="Nilai / unit" />
+          <ItemsEditor items={items} setItems={setItems} products={products} priceFor={(p, unit) => Number(p.product_units?.find((u) => u.unit === unit)?.price_retail ?? 0)} warehouses={warehouses} stockAll={stockAll} checkStock={kind === "purchase"} priceLabel="Nilai / unit" allowNew />
         )}
         <Field label="Alasan / catatan">
           <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="mis. barang rusak" />

@@ -10,7 +10,7 @@ import { balance, type Customer, type Product, type Sale } from "@/lib/types";
 import { CustomerModal } from "@/components/CustomerModal";
 import { ProductSearch } from "@/components/ItemsEditor";
 import { payStatus } from "@/components/status";
-import { Badge, Button, Card, ErrorBox, Loading, NumInput, PageHeader, Select, Stat, Table } from "@/components/ui";
+import { Button, Card, ErrorBox, Loading, NumInput, PageHeader, Select, Stat, Table } from "@/components/ui";
 
 type CP = { id: string; product_id: string; unit: string; price: number; products: { name: string } };
 
@@ -49,7 +49,7 @@ export default function CustomerDetail() {
 
   async function addSpecial(p: Product) {
     const u = p.product_units?.find((x) => x.unit === p.base_unit);
-    const price = Number(c.price_type === "grosir" ? u?.price_wholesale : u?.price_retail) || 0;
+    const price = Number(u?.price_wholesale || u?.price_retail) || 0;
     const { error } = await sb().from("customer_prices").upsert({ customer_id: c.id, product_id: p.id, unit: p.base_unit, price }, { onConflict: "customer_id,product_id,unit" });
     if (error) alert(error.message);
     reload();
@@ -73,7 +73,7 @@ export default function CustomerDetail() {
         title={c.name}
         subtitle={
           <>
-            <Badge tone={c.price_type === "grosir" ? "info" : "neutral"}>{c.price_type}</Badge> {c.phone} {c.address && `· ${c.address}`} {c.term_days > 0 && `· tempo ${c.term_days} hari`}
+            {c.phone} {c.address && `· ${c.address}`} {c.term_days > 0 && `· tempo ${c.term_days} hari`}
           </>
         }
         actions={

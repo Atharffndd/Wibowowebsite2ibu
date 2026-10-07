@@ -6,7 +6,7 @@ import { sb } from "@/lib/supabase";
 import { useAsync } from "@/lib/hooks";
 import { addDays, tglPendek, today } from "@/lib/format";
 import type { DeliveryNote } from "@/lib/types";
-import { Badge, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Table } from "@/components/ui";
+import { Badge, Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Table } from "@/components/ui";
 
 type Row = DeliveryNote & { sales: { number: string } | null };
 
@@ -25,7 +25,15 @@ export default function SuratJalanList() {
 
   return (
     <>
-      <PageHeader title="Surat Jalan" subtitle="Surat Jalan dibuat dari nota: buka nota → tombol “Buat Surat Jalan”." />
+      <PageHeader
+        title="Surat Jalan"
+        subtitle="Dari nota: buka nota → “Buat Surat Jalan”. Atau buat Surat Jalan tanpa nota (tidak mengurangi stok)."
+        actions={
+          <Link href="/surat-jalan/baru">
+            <Button>+ Surat Jalan tanpa nota</Button>
+          </Link>
+        }
+      />
       <Card>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <Field label="Dari">
@@ -67,9 +75,13 @@ export default function SuratJalanList() {
                   <td>{r.recipient_name}</td>
                   <td>{[r.vehicle_type, r.vehicle_number].filter(Boolean).join(" · ") || "-"}</td>
                   <td>
-                    <Link href={`/nota/${r.sale_id}`} className="text-brand hover:underline font-mono text-[13px]">
-                      {r.sales?.number}
-                    </Link>
+                    {r.sale_id ? (
+                      <Link href={`/nota/${r.sale_id}`} className="text-brand hover:underline font-mono text-[13px]">
+                        {r.sales?.number}
+                      </Link>
+                    ) : (
+                      <span className="text-muted text-xs">Tanpa nota</span>
+                    )}
                   </td>
                   <td>{r.status === "batal" ? <Badge tone="bad">Batal</Badge> : <Badge tone="good">Aktif</Badge>}</td>
                 </tr>

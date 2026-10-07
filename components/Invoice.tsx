@@ -8,12 +8,12 @@ type Row = { key: string; name: string; unit: string; price: number; qty: number
 
 /** Gabungkan baris barang yang sama (nama, satuan, harga sama) — mis. diambil dari dua gudang.
  *  Dipakai juga oleh Surat Jalan agar daftar barangnya sama persis dengan nota. */
-export function mergeRows(items: SaleItem[], sale: Sale): Row[] {
+export function mergeRows(items: SaleItem[], sale: Pick<Sale, "warehouse_id"> | null): Row[] {
   const out: Row[] = [];
   const byKey = new Map<string, Row>();
   for (const it of items) {
     const key = `${it.product_id}|${it.name}|${it.unit}|${Number(it.price)}`;
-    const wh = it.warehouse_id ?? sale.warehouse_id;
+    const wh = it.warehouse_id ?? sale?.warehouse_id ?? "";
     let r = byKey.get(key);
     if (!r) {
       r = { key, name: it.name, unit: it.unit, price: Number(it.price), qty: 0, subtotal: 0, sources: [] };

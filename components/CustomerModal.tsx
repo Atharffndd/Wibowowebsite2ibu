@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { sb, errMsg } from "@/lib/supabase";
 import type { Customer } from "@/lib/types";
-import { Button, ErrorBox, Field, Input, Modal, NumInput, Select, Textarea } from "./ui";
+import { Button, ErrorBox, Field, Input, Modal, NumInput, Textarea } from "./ui";
 
 export function CustomerModal({ customer, onClose, onSaved }: { customer: Customer | null; onClose: () => void; onSaved: () => void }) {
   const [f, setF] = useState({
     name: customer?.name ?? "",
-    price_type: customer?.price_type ?? "eceran",
+    price_type: customer?.price_type ?? "grosir",
     phone: customer?.phone ?? "",
     address: customer?.address ?? "",
     term_days: customer?.term_days ?? 0,
@@ -40,12 +40,6 @@ export function CustomerModal({ customer, onClose, onSaved }: { customer: Custom
           <Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Tipe harga">
-            <Select value={f.price_type} onChange={(e) => setF({ ...f, price_type: e.target.value as Customer["price_type"] })}>
-              <option value="eceran">Eceran</option>
-              <option value="grosir">Grosir</option>
-            </Select>
-          </Field>
           <Field label="Tempo bayar (hari)" hint="0 = tunai">
             <NumInput value={f.term_days} onChange={(n) => setF({ ...f, term_days: Math.max(0, Math.round(n)) })} />
           </Field>

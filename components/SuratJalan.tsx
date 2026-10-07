@@ -17,10 +17,11 @@ export type SuratJalanData = {
 
 /**
  * Dokumen Surat Jalan — kop, font & gaya sama dengan nota (Invoice.tsx).
- * Barang diambil dari nota sumber (urutan, jumlah, satuan, nama sama persis; tanpa harga).
+ * Barang diambil dari nota sumber (urutan, jumlah, satuan, nama sama persis; tanpa harga),
+ * atau dari daftar barang Surat Jalan sendiri jika dibuat tanpa nota (sale = null).
  * TTD/cap kanan memakai aset yang sama dengan nota.
  */
-export function SuratJalan({ sj, sale, items, settings }: { sj: SuratJalanData; sale: Sale; items: SaleItem[]; settings: Settings }) {
+export function SuratJalan({ sj, sale, items, settings }: { sj: SuratJalanData; sale: Sale | null; items: SaleItem[]; settings: Settings }) {
   const rows = mergeRows(items, sale);
   const sig = settings.signature_url || "/ttd.png";
   const vehicle = [sj.vehicle_type, sj.vehicle_number].filter(Boolean);
