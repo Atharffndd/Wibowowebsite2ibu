@@ -188,6 +188,7 @@ Ambil definisi terbaru: `select pg_get_functiondef('public.save_sale(jsonb)'::re
 - 5 Okt 2026 — WhatsApp Nota & Surat Jalan kirim file PDF (menu Bagikan), Unduh PDF langsung, hapus header/footer cetak & baris "Nota: …" di Surat Jalan (sama dengan PR #9 Tiga Putra).
 - 5 Okt 2026 — Cap & paraf digambar langsung ke kanvas PDF (hilang di Safari iPad).
 - 7 Okt 2026 — Opsi grosir/eceran dihapus (1 harga jual); pelanggan/supplier/barang baru bisa diketik langsung; setelah pilih barang kursor ke Jumlah → Enter Harga → Enter cari barang; Surat Jalan tanpa nota. (Sama dengan PR #12 Tiga Putra.)
+- 17 Okt 2026 — Detail nota: tombol **‹ Sebelumnya / Berikutnya ›** + "Nota X dari Y" mengikuti daftar nota yang sedang dibuka (filter disimpan di sessionStorage; `lib/notaNav.ts`, `components/NotaNav.tsx`). Berikutnya = baris di bawahnya di daftar; berputar di ujung. Sama dengan Tiga Putra.
 
 ---
 
