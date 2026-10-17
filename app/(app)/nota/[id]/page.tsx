@@ -9,6 +9,8 @@ import { num, rp, tanggal } from "@/lib/format";
 import { balance, type DeliveryNote, type Sale, type SaleItem } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
 import { Invoice } from "@/components/Invoice";
+import { NotaNav } from "@/components/NotaNav";
+import { loadNotaNav } from "@/lib/notaNav";
 import { ShareDoc } from "@/components/ShareDoc";
 import { PaymentList, PaymentModal, type Payment } from "@/components/Payments";
 import { payStatus } from "@/components/status";
@@ -23,8 +25,11 @@ export default function NotaDetail() {
   const docRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("saved")) setJustSaved(true);
-  }, []);
+    setJustSaved(!!new URLSearchParams(window.location.search).get("saved"));
+  }, [id]);
+
+  // Daftar nota untuk tombol Sebelumnya/Berikutnya (gagal memuat = tombol tidak tampil)
+  const { data: navRefs } = useAsync(() => loadNotaNav(id).catch(() => null), [id]);
 
   const { data, error, loading, reload } = useAsync(async () => {
     const [s, it, pay, cust, sj] = await Promise.all([
@@ -79,12 +84,16 @@ export default function NotaDetail() {
 
   return (
     <>
+      <div className="no-print flex flex-wrap items-center justify-between gap-3 mb-3">
+        <Link href="/nota" className="text-sm text-brand hover:underline">
+          ‹ Daftar nota
+        </Link>
+        <NotaNav refs={navRefs} currentId={sale.id} />
+      </div>
+
       <div className="no-print flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <Link href="/nota" className="text-sm text-brand hover:underline">
-            ‹ Daftar nota
-          </Link>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold font-mono">{sale.number}</h1>
             {payStatus(sale)}
           </div>

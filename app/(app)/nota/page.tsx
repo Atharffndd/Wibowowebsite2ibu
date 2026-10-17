@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { sb } from "@/lib/supabase";
 import { useAsync } from "@/lib/hooks";
+import { saveNotaCtx } from "@/lib/notaNav";
 import { addDays, num, tglPendek, today } from "@/lib/format";
 import { balance, type Sale } from "@/lib/types";
 import { payStatus } from "@/components/status";
@@ -17,6 +18,11 @@ export default function NotaList() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("aktif");
   const [page, setPage] = useState(0);
+
+  // Simpan filter daftar agar tombol Sebelumnya/Berikutnya di detail nota mengikuti daftar ini
+  useEffect(() => {
+    saveNotaCtx({ from, to, q, status });
+  }, [from, to, q, status]);
 
   const { data, error, loading } = useAsync(async () => {
     let query = sb()
