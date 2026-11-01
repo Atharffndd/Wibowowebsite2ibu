@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeUnit } from "@/lib/units";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { sb, fetchAll, errMsg } from "@/lib/supabase";
@@ -76,7 +77,7 @@ export default function BarangPage() {
       for (const r of raw) {
         const name = String(pick(r, "nama barang", "nama", "barang") ?? "").trim();
         if (!name) continue;
-        const unit = String(pick(r, "satuan", "sat", "unit") ?? "pcs").trim() || "pcs";
+        const unit = normalizeUnit(String(pick(r, "satuan", "sat", "unit") ?? "pcs")) || "pcs";
         const factor = Number(pick(r, "isi", "isi (x satuan dasar)", "konversi") ?? 1) || 1;
         const harga = Number(pick(r, "harga jual", "harga grosir", "harga", "harga standar", "harga eceran") ?? 0) || 0;
         const catName = String(pick(r, "kategori") ?? "").trim();
@@ -277,9 +278,9 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
   async function save() {
     setError(null);
     if (!name.trim()) return setError("Nama barang wajib diisi.");
-    const clean = units.filter((u) => u.unit.trim());
-    if (!clean.some((u) => u.unit.trim() === baseUnit.trim())) return setError(`Satuan dasar "${baseUnit}" harus ada di daftar satuan (isi = 1).`);
-    if (new Set(clean.map((u) => u.unit.trim())).size !== clean.length) return setError("Nama satuan tidak boleh dobel.");
+    const clean = units.filter((u) => normalizeUnit(u.unit));
+    if (!clean.some((u) => normalizeUnit(u.unit) === normalizeUnit(baseUnit))) return setError(`Satuan dasar "${baseUnit}" harus ada di daftar satuan (isi = 1).`);
+    if (new Set(clean.map((u) => normalizeUnit(u.unit))).size !== clean.length) return setError("Nama satuan tidak boleh dobel.");
     setBusy(true);
     try {
       let catId = categoryId || null;
@@ -288,7 +289,7 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
         if (error) throw error;
         catId = data.id;
       }
-      const row = { name: name.trim(), sku: sku.trim() || null, category_id: catId, base_unit: baseUnit.trim(), min_stock: minStock, notes: notes || null, active, updated_at: new Date().toISOString() };
+      const row = { name: name.trim(), sku: sku.trim() || null, category_id: catId, base_unit: normalizeUnit(baseUnit), min_stock: minStock, notes: notes || null, active, updated_at: new Date().toISOString() };
       let id = product?.id;
       if (id) {
         const { error } = await sb().from("products").update(row).eq("id", id);
@@ -298,8 +299,8 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
         if (error) throw error;
         id = data.id;
       }
-      const keep = clean.map((u) => u.unit.trim());
-      const removed = (product?.product_units ?? []).filter((u) => !keep.includes(u.unit));
+      const keep = clean.map((u) => normalizeUnit(u.unit));
+      const removed = (product?.product_units ?? []).filter((u) => !keep.includes(normalizeUnit(u.unit)));
       if (removed.length) {
         const { error } = await sb().from("product_units").delete().in("id", removed.map((u) => u.id!));
         if (error) throw error;
@@ -309,8 +310,8 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
         .upsert(
           clean.map((u) => ({
             product_id: id,
-            unit: u.unit.trim(),
-            factor: u.unit.trim() === baseUnit.trim() ? 1 : u.factor,
+            unit: normalizeUnit(u.unit),
+            factor: normalizeUnit(u.unit) === normalizeUnit(baseUnit) ? 1 : u.factor,
             price_retail: u.price_wholesale,
             price_wholesale: u.price_wholesale,
           })),
@@ -349,7 +350,7 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
             <Input value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="mis. Bumbu" />
           </Field>
           <Field label="Satuan dasar (untuk stok)" hint="Stok & HPP dihitung dalam satuan ini">
-            <Input value={baseUnit} onChange={(e) => setBaseUnit(e.target.value)} />
+            <Input value={baseUnit} onChange={(e) => setBaseUnit(e.target.value)} onBlur={() => setBaseUnit(normalizeUnit(baseUnit))} />
           </Field>
           <Field label="Stok minimal (peringatan)">
             <NumInput value={minStock} onChange={setMinStock} />
@@ -373,11 +374,11 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
               </thead>
               <tbody>
                 {units.map((u, i) => {
-                  const isBase = u.unit.trim() === baseUnit.trim();
+                  const isBase = normalizeUnit(u.unit) === normalizeUnit(baseUnit);
                   return (
                     <tr key={i}>
                       <td>
-                        <Input value={u.unit} onChange={(e) => setU(i, { unit: e.target.value })} className="py-1.5 min-w-20" placeholder="dus" />
+                        <Input value={u.unit} onChange={(e) => setU(i, { unit: e.target.value })} onBlur={() => setU(i, { unit: normalizeUnit(u.unit) })} className="py-1.5 min-w-20" placeholder="dus" />
                       </td>
                       <td>
                         <NumInput value={isBase ? 1 : u.factor} disabled={isBase} onChange={(n) => setU(i, { factor: n })} className="py-1.5 min-w-20" />

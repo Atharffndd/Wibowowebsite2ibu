@@ -196,3 +196,12 @@ Ambil definisi terbaru: `select pg_get_functiondef('public.save_sale(jsonb)'::re
 - 46 barang berharga 0 (dari `#NUM!` di Excel) — perlu diisi harga di menu Barang & Harga.
 - Barang dobel ("- 2" / "(pcs)") — pemilik perlu konfirmasi: gabung, ganti nama, atau nonaktifkan.
 - Supplier belum diisi.
+
+---
+
+## Pembaruan 1 Nov 2026 — Dashboard performa, Export Excel akuntan, standarisasi satuan
+- **Dashboard** (`app/(app)/page.tsx`): filter tanggal (pintasan Hari ini / 7 hari / Bulan ini / Bulan lalu) + satu pelanggan; kartu jumlah nota, omzet, barang terjual, laba kotor; **Top produk per satuan** (urut jumlah atau omzet) dan Top pelanggan; kotak peringatan kualitas data (barang tanpa harga beli, harga Rp 0, nota tanpa pelanggan). Laba tetap tampil tetapi diberi tanda "belum lengkap" bila ≥ 20% baris tanpa harga beli. Data dari fungsi database `dashboard_report(p_from, p_to, p_customer)` (migrasi `0009`). Ringkasan operasional (piutang, hutang, stok menipis, nota terbaru) tetap ada di bawah.
+- **Export Excel** (tombol di halaman Nota → `components/ExportNotaDialog.tsx`, `lib/exportNota.ts`): wajib pilih rentang tanggal + **satu** pelanggan; nota batal tidak ikut. Isi file: sheet **Rekap** (satu baris per nota), sheet **Semua Item** (gabungan, kolom No. Nota), dan **satu sheet per nomor nota**. Kolom per barang: nama, jumlah, satuan, harga, harga total, **harga supplier** (= harga beli/HPP per satuan jual), **selisih per satuan**, **total selisih**. Barang tanpa harga beli ditulis "belum ada harga beli" dan tidak dihitung dalam total selisih.
+- **Satuan standar**: bentuk standar = huruf kecil tanpa spasi; ejaan umum digabung lewat tabel `unit_alias` (ball→bal, botol/btol→btl, btir/btit→butir, jrigen/jligen→jirigen, ikat→iket, lmbr→lembar, rcg→renceng, L→liter, boks→box). Fungsi `norm_unit()` + pemicu `norm_unit_trg` di semua tabel bersatuan (jalan saat insert / saat kolom satuan diubah); di layar, `lib/units.ts` memperbaiki satuan begitu kolomnya ditinggalkan. Migrasi `0008` (fungsi, pemicu) dan `0008b` (perapian data lama, sekali jalan; cadangan nilai asli di schema `bak_units`).
+- Tiga Putra: 4 barang punya baris satuan kembar dengan **faktor konversi berbeda** (mis. `dus` 1 vs `Dus` 83) — sengaja TIDAK digabung; sisa `Dus`/`KG` huruf besar. Perlu diputuskan pemilik.
+- Wibowo: data nota dari situs lama (notawibowo) sudah dipindah (700 nota, 6 Agu–3 Nov 2026), stok mulai nol, semua nota tercatat lunas. Laba Wibowo belum bermakna sampai harga beli diisi lewat Barang Masuk.

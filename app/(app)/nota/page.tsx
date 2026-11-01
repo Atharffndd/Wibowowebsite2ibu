@@ -8,6 +8,7 @@ import { saveNotaCtx } from "@/lib/notaNav";
 import { addDays, num, tglPendek, today } from "@/lib/format";
 import { balance, type Sale } from "@/lib/types";
 import { payStatus } from "@/components/status";
+import { ExportNotaDialog } from "@/components/ExportNotaDialog";
 import { Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Select, Table } from "@/components/ui";
 
 const PAGE = 50;
@@ -18,6 +19,7 @@ export default function NotaList() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("aktif");
   const [page, setPage] = useState(0);
+  const [exportOpen, setExportOpen] = useState(false);
 
   // Simpan filter daftar agar tombol Sebelumnya/Berikutnya di detail nota mengikuti daftar ini
   useEffect(() => {
@@ -49,11 +51,17 @@ export default function NotaList() {
         title="Nota Penjualan"
         subtitle="Daftar semua nota. Nomor nota bertambah otomatis setiap nota baru disimpan."
         actions={
-          <Link href="/nota/baru">
-            <Button>+ Nota baru</Button>
-          </Link>
+          <>
+            <Button variant="secondary" onClick={() => setExportOpen(true)}>
+              Export Excel
+            </Button>
+            <Link href="/nota/baru">
+              <Button>+ Nota baru</Button>
+            </Link>
+          </>
         }
       />
+      <ExportNotaDialog open={exportOpen} onClose={() => setExportOpen(false)} defaultFrom={from} defaultTo={to} />
       <Card>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
           <Field label="Dari">

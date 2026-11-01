@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeUnit } from "@/lib/units";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LineItem, Product, Warehouse } from "@/lib/types";
 import type { StockAll } from "@/lib/hooks";
@@ -321,6 +322,7 @@ export function ItemsEditor({
                         value={it.unit}
                         list="unit-options"
                         onChange={(e) => update(it.key, { unit: e.target.value })}
+                        onBlur={(e) => update(it.key, { unit: normalizeUnit(e.target.value) })}
                         className="py-1.5"
                         data-unit={it.key}
                         enterKeyHint="next"
