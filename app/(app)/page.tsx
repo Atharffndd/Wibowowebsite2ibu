@@ -1,5 +1,6 @@
 "use client";
 
+import { SearchSelect } from "@/components/SearchSelect";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { sb } from "@/lib/supabase";
@@ -8,7 +9,7 @@ import { addDays, firstOfMonth, num, qty as fq, tglPendek, today } from "@/lib/f
 import type { Sale } from "@/lib/types";
 import { BarChartRp } from "@/components/BarChartRp";
 import { payStatus } from "@/components/status";
-import { Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Select, Stat, Table, cx } from "@/components/ui";
+import { Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Stat, Table, cx } from "@/components/ui";
 
 type TopProd = { product_id: string; name: string; unit: string; qty: number; omzet: number; nota: number };
 type Report = {
@@ -94,14 +95,7 @@ export default function Dashboard() {
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </Field>
           <Field label="Pelanggan" className="col-span-2">
-            <Select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
-              <option value="">Semua pelanggan</option>
-              {(customers ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+            <SearchSelect value={customerId} onChange={setCustomerId} options={customers ?? []} allLabel="Semua pelanggan" />
           </Field>
         </div>
         <div className="flex flex-wrap gap-2 mt-3">

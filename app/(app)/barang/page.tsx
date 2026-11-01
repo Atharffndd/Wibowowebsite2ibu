@@ -1,5 +1,6 @@
 "use client";
 
+import { SearchSelect } from "@/components/SearchSelect";
 import { normalizeUnit } from "@/lib/units";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
@@ -165,14 +166,7 @@ export default function BarangPage() {
             <Input value={q} onChange={(e) => setQ(e.target.value)} />
           </Field>
           <Field label="Kategori">
-            <Select value={cat} onChange={(e) => setCat(e.target.value)}>
-              <option value="">Semua</option>
-              {data?.cats.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+            <SearchSelect value={cat} onChange={setCat} options={data?.cats ?? []} allLabel="Semua" />
           </Field>
           <label className="flex items-center gap-2 text-sm pb-2">
             <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} /> Tampilkan nonaktif
@@ -337,14 +331,7 @@ function ProductModal({ product, cats, onClose, onSaved }: { product: Product | 
             <Input value={sku} onChange={(e) => setSku(e.target.value)} />
           </Field>
           <Field label="Kategori">
-            <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-              <option value="">— Tanpa kategori —</option>
-              {cats.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+            <SearchSelect value={categoryId} onChange={setCategoryId} options={cats} allLabel="— Tanpa kategori —" />
           </Field>
           <Field label="…atau kategori baru">
             <Input value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="mis. Bumbu" />

@@ -1,10 +1,11 @@
 "use client";
 
+import { SearchSelect } from "@/components/SearchSelect";
 import { useState } from "react";
 import { loadCustomers, useAsync } from "@/lib/hooks";
 import { errMsg } from "@/lib/supabase";
 import { exportNotaXlsx } from "@/lib/exportNota";
-import { Button, ErrorBox, Field, Input, Modal, Select } from "@/components/ui";
+import { Button, ErrorBox, Field, Input, Modal } from "@/components/ui";
 
 /** Export nota ke Excel untuk akuntan: pilih rentang tanggal dan satu pelanggan. */
 export function ExportNotaDialog({ open, onClose, defaultFrom, defaultTo }: { open: boolean; onClose: () => void; defaultFrom: string; defaultTo: string }) {
@@ -44,14 +45,7 @@ export function ExportNotaDialog({ open, onClose, defaultFrom, defaultTo }: { op
           <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </Field>
         <Field label="Pelanggan (pilih satu)" className="col-span-2">
-          <Select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
-            <option value="">— pilih pelanggan —</option>
-            {(customers ?? []).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect value={customerId} onChange={setCustomerId} options={customers ?? []} placeholder="Ketik nama pelanggan…" />
         </Field>
       </div>
       <p className="text-xs text-muted mt-3">File berisi sheet Rekap, sheet Semua Item, dan satu sheet per nomor nota. Nota batal tidak ikut. Harga supplier diambil dari harga beli barang; barang tanpa harga beli ditandai dan tidak dihitung selisihnya.</p>
