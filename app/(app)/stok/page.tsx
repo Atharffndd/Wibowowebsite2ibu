@@ -9,7 +9,7 @@ import { MOVEMENT_LABEL, addDays, num, qty, tglPendek, today } from "@/lib/forma
 import type { Product } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
 import { ProductSearch } from "@/components/ItemsEditor";
-import { Badge, Button, Card, Empty, ErrorBox, Field, Input, Loading, Modal, NumInput, PageHeader, Select, Stat, Table, cx } from "@/components/ui";
+import { Badge, Button, Card, Empty, DecInput, ErrorBox, Field, Input, Loading, Modal, NumInput, PageHeader, Select, Stat, Table, cx } from "@/components/ui";
 
 type Tab = "stok" | "mutasi";
 type Mode = "opening" | "adjust" | "transfer";
@@ -375,13 +375,7 @@ function AdjustModal({ mode, products, stockMap, onClose, onSaved }: { mode: Mod
                           {qty(sys)} {p.base_unit}
                         </td>
                         <td>
-                          <input
-                            type="number"
-                            step="any"
-                            value={c ?? ""}
-                            onChange={(e) => setCounted((m) => ({ ...m, [p.id]: e.target.value === "" ? undefined : Number(e.target.value) }))}
-                            className="w-full rounded border border-line px-2 py-1 text-right"
-                          />
+                          <DecInput value={c} onChange={(n) => setCounted((m) => ({ ...m, [p.id]: n }))} className="py-1" />
                         </td>
                         <td className={cx("num", diff > 0 && "text-emerald-700", diff < 0 && "text-red-700")}>{c === undefined ? "" : (diff > 0 ? "+" : "") + qty(diff)}</td>
                       </tr>

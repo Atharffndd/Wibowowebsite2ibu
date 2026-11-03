@@ -10,7 +10,7 @@ import type { LineItem, Product } from "@/lib/types";
 import { useApp } from "@/components/AppContext";
 import { NameCombo, type ComboOption } from "@/components/NameCombo";
 import { ItemsEditor, itemsPayload, itemsSubtotal, newKey } from "@/components/ItemsEditor";
-import { Badge, Button, Card, Empty, ErrorBox, Field, Input, Loading, Modal, PageHeader, Select, Table } from "@/components/ui";
+import { Badge, Button, Card, Empty, ErrorBox, Field, Input, Loading, Modal, NumInput, PageHeader, Select, Table } from "@/components/ui";
 
 type Ret = { id: string; number: string; kind: "sale" | "purchase"; date: string; party_name: string | null; total: number; sale_id: string | null; purchase_id: string | null; notes: string | null; sales: { number: string } | null; purchases: { number: string } | null };
 
@@ -256,15 +256,7 @@ function ReturnModal({ saleId, purchaseId, onClose, onSaved }: { saleId: string 
                     {maxQty[it.key]} {it.unit}
                   </td>
                   <td>
-                    <input
-                      type="number"
-                      step="any"
-                      min={0}
-                      max={maxQty[it.key]}
-                      value={it.qty || ""}
-                      onChange={(e) => setItems((its) => its.map((x) => (x.key === it.key ? { ...x, qty: Number(e.target.value) || 0 } : x)))}
-                      className="w-full rounded border border-line px-2 py-1 text-right"
-                    />
+                    <NumInput value={it.qty} onChange={(n) => setItems((its) => its.map((x) => (x.key === it.key ? { ...x, qty: n } : x)))} className="py-1" />
                   </td>
                   <td className="num">{num(it.price)}</td>
                   <td className="num">{num(it.qty * it.price)}</td>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
+import { useEffect, useState, type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
 export function cx(...c: (string | false | null | undefined)[]) {
   return c.filter(Boolean).join(" ");
@@ -40,20 +40,52 @@ export function Input(p: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...p} className={cx(inputCls, p.className)} />;
 }
 
-/** Input angka: menerima "1.000" atau "1000" */
-export function NumInput({ value, onChange, className, ...p }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & { value: number; onChange: (n: number) => void }) {
+const DEC_RE = /^-?\d*[.,]?\d*$/;
+const parseDec = (s: string) => {
+  const n = Number(s.replace(",", "."));
+  return s.trim() === "" || !Number.isFinite(n) ? undefined : n;
+};
+const showDec = (n: number | undefined) => (n === undefined || !Number.isFinite(n) ? "" : String(n).replace(".", ","));
+
+/**
+ * Input desimal: boleh diketik "0,5" atau "0.5" (koma/titik). Teks yang sedang diketik
+ * disimpan sendiri supaya "0," tidak langsung berubah jadi "0" (masalah di HP/iPad).
+ */
+export function DecInput({ value, onChange, className, onBlur, emptyAs, ...p }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & { value: number | undefined; onChange: (n: number | undefined) => void; emptyAs?: number }) {
+  const [text, setText] = useState(showDec(value));
+  const [prev, setPrev] = useState(value);
+  if (value !== prev) {
+    setPrev(value);
+    if ((parseDec(text) ?? emptyAs) !== value) setText(showDec(value));
+  }
   return (
     <input
       {...p}
-      type="number"
+      type="text"
       inputMode="decimal"
-      step="any"
-      value={Number.isFinite(value) ? value : 0}
+      autoComplete="off"
+      value={text}
       onFocus={(e) => e.currentTarget.select()}
-      onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+      onChange={(e) => {
+        const raw = e.target.value;
+        if (!DEC_RE.test(raw)) return;
+        setText(raw);
+        const n = parseDec(raw);
+        setPrev(n ?? emptyAs);
+        onChange(n);
+      }}
+      onBlur={(e) => {
+        setText(showDec(value));
+        onBlur?.(e);
+      }}
       className={cx(inputCls, "text-right tabular-nums", className)}
     />
   );
+}
+
+/** Input angka (kosong dihitung 0): menerima "1000", "0,5" atau "0.5" */
+export function NumInput({ value, onChange, ...p }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & { value: number; onChange: (n: number) => void }) {
+  return <DecInput {...p} emptyAs={0} value={Number.isFinite(value) ? value : 0} onChange={(n) => onChange(n ?? 0)} />;
 }
 
 export function Select(p: SelectHTMLAttributes<HTMLSelectElement>) {
