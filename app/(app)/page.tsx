@@ -7,7 +7,9 @@ import { sb } from "@/lib/supabase";
 import { loadCustomers, useAsync } from "@/lib/hooks";
 import { addDays, firstOfMonth, num, qty as fq, tglPendek, today } from "@/lib/format";
 import type { Sale } from "@/lib/types";
-import { BarChartRp } from "@/components/BarChartRp";
+import dynamic from "next/dynamic";
+// grafik (recharts) baru diunduh saat dibutuhkan, bukan saat halaman pertama dibuka
+const BarChartRp = dynamic(() => import("@/components/BarChartRp").then((m) => m.BarChartRp), { ssr: false, loading: () => <div style={{ height: 260 }} /> });
 import { payStatus } from "@/components/status";
 import { Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Stat, Table, cx } from "@/components/ui";
 

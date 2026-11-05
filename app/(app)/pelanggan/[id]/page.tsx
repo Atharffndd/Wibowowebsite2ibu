@@ -20,7 +20,7 @@ export default function CustomerDetail() {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    loadProducts().then(setProducts);
+    loadProducts(false, true).then(setProducts);
   }, []);
 
   const { data, error, loading, reload } = useAsync(async () => {

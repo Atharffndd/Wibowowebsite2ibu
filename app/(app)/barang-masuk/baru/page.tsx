@@ -48,7 +48,7 @@ function PurchaseForm() {
   useEffect(() => {
     (async () => {
       try {
-        const [p, s, st] = await Promise.all([loadProducts(), loadSuppliers(), loadStockAll()]);
+        const [p, s, st] = await Promise.all([loadProducts(false, true), loadSuppliers(), loadStockAll()]);
         setProducts(p);
         setSuppliers(s);
         setStockAll(st);

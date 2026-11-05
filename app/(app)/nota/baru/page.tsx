@@ -55,7 +55,7 @@ function NotaForm() {
   useEffect(() => {
     (async () => {
       try {
-        const [p, c, st] = await Promise.all([loadProducts(), loadCustomers(), loadStockAll()]);
+        const [p, c, st] = await Promise.all([loadProducts(false, true), loadCustomers(), loadStockAll()]);
         setProducts(p);
         setCustomers(c);
         setStockAll(st);

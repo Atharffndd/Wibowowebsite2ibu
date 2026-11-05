@@ -134,7 +134,7 @@ function ReturnModal({ saleId, purchaseId, onClose, onSaved }: { saleId: string 
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    loadProducts().then(setProducts);
+    loadProducts(false, true).then(setProducts);
     loadStockAll().then(setStockAll);
     if (!saleId && !purchaseId) {
       loadCustomers().then((c) => setCustomers(c.map((x) => ({ id: x.id, name: x.name }))));

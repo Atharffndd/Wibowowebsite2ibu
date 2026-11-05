@@ -191,7 +191,7 @@ function SJMandiriForm({ existing }: { existing: DeliveryNote | null }) {
   useEffect(() => {
     (async () => {
       try {
-        const [p, c] = await Promise.all([loadProducts(), loadCustomers()]);
+        const [p, c] = await Promise.all([loadProducts(false, true), loadCustomers()]);
         setProducts(p);
         setCustomers(c);
         if (existing) {

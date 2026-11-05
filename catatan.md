@@ -92,7 +92,7 @@ lib/
   supabase.ts           client + fetchAll (lewati limit 1000 baris)
   hooks.ts              useAsync, loadProducts/Customers/Suppliers, loadStockAll
   types.ts, format.ts (rp, tanggal Indonesia), excel.ts
-supabase/migrations/    0001,0002,0004,0005 (dari Tiga Putra) + 0006_wibowo_perbedaan + 0007_ketik_baru_sj_mandiri (diterapkan lewat MCP)
+supabase/migrations/    0001,0002,0004,0005 (dari Tiga Putra) + 0006_wibowo_perbedaan + 0007_ketik_baru_sj_mandiri + 0008 satuan standar + 0009_dashboard_report + 0010_statistik_dan_indeks (diterapkan lewat MCP)
 public/ttd.png          cap Kios Wibowo + tanda tangan
 ```
 
@@ -131,6 +131,7 @@ Tipe mutasi: `opening, purchase, sale, sale_return, purchase_return, adjust, tra
 | `save_return(p jsonb)` / `void_return(id)` | retur / batalkan retur |
 | `save_adjustment(p jsonb)` | `type`: `opening` (stok awal + harga), `adjust` (opname, qty = selisih), `transfer` (`warehouse_id` → `to_warehouse_id`) |
 | `recompute_avg_cost(product)` | putar ulang mutasi untuk HPP rata-rata tertimbang; **Wibowo:** item nota aktif dengan modal 0 ikut memakai HPP baru + `sales.cogs` dihitung ulang |
+| `customer_stats()` / `supplier_stats()` | omzet, piutang, jumlah nota per pelanggan / total, hutang, tanggal terakhir per supplier (nota aktif saja); dipakai halaman Pelanggan & Supplier |
 | `report_sales(from, to, group)` | group: day, month, product, category, customer, warehouse |
 | `dashboard_stats()` | angka dashboard |
 | `next_doc_number(prefix, date)` | nomor dokumen |
@@ -189,6 +190,7 @@ Ambil definisi terbaru: `select pg_get_functiondef('public.save_sale(jsonb)'::re
 - 5 Okt 2026 — Cap & paraf digambar langsung ke kanvas PDF (hilang di Safari iPad).
 - 7 Okt 2026 — Opsi grosir/eceran dihapus (1 harga jual); pelanggan/supplier/barang baru bisa diketik langsung; setelah pilih barang kursor ke Jumlah → Enter Harga → Enter cari barang; Surat Jalan tanpa nota. (Sama dengan PR #12 Tiga Putra.)
 - 17 Okt 2026 — Detail nota: tombol **‹ Sebelumnya / Berikutnya ›** + "Nota X dari Y" mengikuti daftar nota yang sedang dibuka (filter disimpan di sessionStorage; `lib/notaNav.ts`, `components/NotaNav.tsx`). Berikutnya = baris di bawahnya di daftar; berputar di ujung. Sama dengan Tiga Putra.
+- 5 Nov 2026 — Optimalisasi kecepatan (sama dengan Tiga Putra): halaman Pelanggan & Supplier memakai `customer_stats()` / `supplier_stats()` di database (migrasi `0010_statistik_dan_indeks`, juga menambah indeks relasi; angka sudah dibuktikan sama dengan hitungan lama untuk 106 pelanggan) dan riwayat supplier dimuat saat dibuka; daftar barang/pelanggan/supplier untuk formulir disimpan sementara 30 detik (`cached()` di `lib/supabase.ts`, `loadProducts(false, true)`) dan otomatis dikosongkan setiap ada penulisan, sedangkan halaman Stok/Barang tetap segar; `loadStockAll` tidak mengunduh baris stok 0 (1.636 baris/190 kB menjadi 93 baris/11 kB); grafik dimuat belakangan (JS Dashboard sebelum siap 1.063 KB menjadi 718 KB); kotak angka menerima desimal dengan koma/titik (0,5) di HP/iPad. Catatan: database Wibowo di paket gratis Supabase bisa "tertidur" bila lama tidak dipakai (diaktifkan kembali 5 Nov 2026).
 
 ---
 

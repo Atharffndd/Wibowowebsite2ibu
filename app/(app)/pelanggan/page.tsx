@@ -15,18 +15,14 @@ export default function PelangganPage() {
   const [edit, setEdit] = useState<Customer | "new" | null>(null);
 
   const { data, error, loading, reload } = useAsync(async () => {
-    const [customers, open] = await Promise.all([
+    const [customers, st] = await Promise.all([
       fetchAll<Customer>((f, t) => sb().from("customers").select("*").order("name").range(f, t)),
-      fetchAll<{ customer_id: string; total: number; paid_amount: number; return_amount: number }>((f, t) =>
-        sb().from("sales").select("customer_id, total, paid_amount, return_amount").eq("status", "aktif").not("customer_id", "is", null).range(f, t),
-      ),
+      sb().rpc("customer_stats"),
     ]);
+    if (st.error) throw new Error(st.error.message);
     const stats: Record<string, { omzet: number; piutang: number; count: number }> = {};
-    for (const s of open) {
-      const st = (stats[s.customer_id] ??= { omzet: 0, piutang: 0, count: 0 });
-      st.omzet += Number(s.total);
-      st.piutang += Math.max(Number(s.total) - Number(s.paid_amount) - Number(s.return_amount), 0);
-      st.count++;
+    for (const r of (st.data ?? []) as { customer_id: string; omzet: number; piutang: number; cnt: number }[]) {
+      stats[r.customer_id] = { omzet: Number(r.omzet), piutang: Number(r.piutang), count: Number(r.cnt) };
     }
     return { customers, stats };
   }, []);

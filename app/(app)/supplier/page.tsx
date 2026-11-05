@@ -15,18 +15,26 @@ export default function SupplierPage() {
   const [view, setView] = useState<Supplier | null>(null);
 
   const { data, error, loading, reload } = useAsync(async () => {
-    const [suppliers, purchases] = await Promise.all([
+    const [suppliers, st] = await Promise.all([
       fetchAll<Supplier>((f, t) => sb().from("suppliers").select("*").order("name").range(f, t)),
-      fetchAll<Purchase>((f, t) => sb().from("purchases").select("*").eq("status", "aktif").not("supplier_id", "is", null).order("date", { ascending: false }).range(f, t)),
+      sb().rpc("supplier_stats"),
     ]);
+    if (st.error) throw new Error(st.error.message);
     const stats: Record<string, { total: number; hutang: number; last?: string }> = {};
-    for (const p of purchases) {
-      const st = (stats[p.supplier_id!] ??= { total: 0, hutang: 0, last: p.date });
-      st.total += Number(p.total);
-      st.hutang += Math.max(balance(p), 0);
+    for (const r of (st.data ?? []) as { supplier_id: string; total: number; hutang: number; last_date: string }[]) {
+      stats[r.supplier_id] = { total: Number(r.total), hutang: Number(r.hutang), last: r.last_date };
     }
-    return { suppliers, purchases, stats };
+    return { suppliers, stats };
   }, []);
+
+  // riwayat pembelian hanya diambil saat jendelanya dibuka
+  const { data: history } = useAsync(
+    async () =>
+      view
+        ? fetchAll<Purchase>((f, t) => sb().from("purchases").select("*").eq("status", "aktif").eq("supplier_id", view.id).order("date", { ascending: false }).range(f, t))
+        : [],
+    [view?.id],
+  );
 
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -103,21 +111,19 @@ export default function SupplierPage() {
               </tr>
             </thead>
             <tbody>
-              {(data?.purchases ?? [])
-                .filter((p) => p.supplier_id === view.id)
-                .map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <Link href={`/barang-masuk/${p.id}`} className="text-brand hover:underline font-mono text-[13px]">
-                        {p.number}
-                      </Link>
-                    </td>
-                    <td>{tglPendek(p.date)}</td>
-                    <td className="num">{num(p.total)}</td>
-                    <td className="num">{num(Math.max(balance(p), 0))}</td>
-                    <td>{payStatus(p)}</td>
-                  </tr>
-                ))}
+              {(history ?? []).map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <Link href={`/barang-masuk/${p.id}`} className="text-brand hover:underline font-mono text-[13px]">
+                      {p.number}
+                    </Link>
+                  </td>
+                  <td>{tglPendek(p.date)}</td>
+                  <td className="num">{num(p.total)}</td>
+                  <td className="num">{num(Math.max(balance(p), 0))}</td>
+                  <td>{payStatus(p)}</td>
+                </tr>
+              ))}
             </tbody>
           </Table>
         </Modal>

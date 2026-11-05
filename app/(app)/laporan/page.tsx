@@ -5,7 +5,9 @@ import { sb } from "@/lib/supabase";
 import { useAsync } from "@/lib/hooks";
 import { exportXlsx } from "@/lib/excel";
 import { addDays, firstOfMonth, num, qty, today } from "@/lib/format";
-import { BarChartRp } from "@/components/BarChartRp";
+import dynamic from "next/dynamic";
+// grafik (recharts) baru diunduh saat dibutuhkan, bukan saat halaman pertama dibuka
+const BarChartRp = dynamic(() => import("@/components/BarChartRp").then((m) => m.BarChartRp), { ssr: false, loading: () => <div style={{ height: 260 }} /> });
 import { Button, Card, Empty, ErrorBox, Field, Input, Loading, PageHeader, Select, Stat, Table, cx } from "@/components/ui";
 
 type Row = { key: string; label: string; qty: number | null; revenue: number; cogs: number; profit: number; invoices: number };
